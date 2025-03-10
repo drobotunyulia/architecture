@@ -41,4 +41,4 @@ https://slack.com/intl/en-gb/
 - **Message Broker** (RabbitMQ) – асинхронный обмен сообщениями  
 - **Push Notifications System** – уведомления для пользователей  
 
-![System Context]()  
+![System Context](https://github.com/drobotunyulia/architecture/blob/main/structurizr-Deployment-001.png)  
