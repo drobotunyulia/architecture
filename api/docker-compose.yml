@@ -1,0 +1,38 @@
+version: "2.2"
+
+services:
+  auth:
+    build:
+      context: ./auth
+    ports:
+      - "8001:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+
+  chat:
+    build:
+      context: ./chat
+    ports:
+      - "8002:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+
+  message:
+    build:
+      context: ./message
+    ports:
+      - "8003:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+
+  api:
+    build:
+      context: .
+    ports:
+      - "8000:8000"
+    depends_on:
+      - auth
+      - chat
+      - message
+    environment:
+      - PYTHONUNBUFFERED=1
