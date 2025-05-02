@@ -6,3 +6,4 @@ PyJWT==1.7.1
 python-multipart==0.0.20
 psycopg2-binary==2.9.10
 SQLAlchemy==2.0.40
+redis==6.0.0
