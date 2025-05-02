@@ -1,0 +1,85 @@
+version: "2.2"
+
+services:
+  db:
+    image: postgres:14
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:6-alpine
+    container_name: redis_cache
+    restart: always
+    ports:
+      - "6379:6379"
+
+  mongo:
+    image: mongo:7.0
+    container_name: mongo_db
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  auth:
+    build:
+      context: ./auth
+    container_name: auth
+    depends_on:
+      - db
+      - redis
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+    volumes:
+      - ./auth:/auth
+
+  chat:
+    build:
+      context: ./chat
+    container_name: chat
+    depends_on:
+      - mongo
+      - auth
+    environment:
+      MONGO_URL: mongodb://mongo:27017
+    volumes:
+      - ./chat:/chat
+
+  main:
+    build:
+      context: .
+    container_name: main
+    depends_on:
+      - db
+      - auth
+      - chat
+      - mongo
+      - redis
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      MONGO_URL: mongodb://mongo:27017
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    command: >
+      sh -c "python init_db.py && python init_mongo.py && uvicorn main:app --host 0.0.0.0 --port 8000"
+
+volumes:
+  postgres_data:
+  mongo_data:
